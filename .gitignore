@@ -3,3 +3,18 @@ visualizations/
 .run/
 *.pyc
 *.pdf
+
+# generated samples
+*Outputs*
+Samples/
+nohup.out
+
+# python
+.ipynb_checkpoints/
+
+# model ckpts
+ckpts/
+
+# vscode 
+.vscode
+*.code-workspace
