@@ -8,6 +8,7 @@
 import argparse
 import torch
 import torch.nn as nn
+from torchvision.utils import save_image
 import numpy as np
 import os
 
@@ -23,6 +24,7 @@ import datasets
 from fid.fid_score import compute_statistics_of_generator, load_statistics, calculate_frechet_distance
 from fid.inception import InceptionV3
 
+from IPython.core.debugger import set_trace as breakpoint
 
 def main(args):
     # ensures that weight initializations are all the same
@@ -147,6 +149,12 @@ def train(train_queue, model, cnn_optimizer, grad_scalar, global_step, warmup_it
     model.train()
     for step, x in enumerate(train_queue):
         x = x[0] if len(x) > 1 else x
+        
+        #debug -- cocoaaa
+        # save image to make sure our data-preproc is applied properly
+        # breakpoint()
+        # save_image(x, './temp.png')
+        
         x = x.cuda()
 
         # change bit length

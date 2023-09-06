@@ -10,6 +10,8 @@ import os
 import shutil
 import time
 from datetime import timedelta
+from datetime import datetime
+
 import sys
 
 import torch
@@ -20,6 +22,10 @@ import torch.distributed as dist
 import torch.nn.functional as F
 from tensorboardX import SummaryWriter
 
+def now2str():
+    now = datetime.now()
+    now_str = now.strftime("%Y%m%d-%H%M%S")
+    return now_str
 
 class AvgrageMeter(object):
 

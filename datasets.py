@@ -161,7 +161,8 @@ def get_loaders_eval(dataset, args):
         if dataset == 'celeba_64':
             resize = 64
             num_classes = 40
-            train_transform, valid_transform = _data_transforms_celeba64(resize)
+            # train_transform, valid_transform = _data_transforms_celeba64(resize)
+            train_transform, valid_transform = _data_transforms_celeba64_hjs(resize) #cocoaaa; 2022-05-28 for training nvae from scratch with our data-preprocessing
             train_data = LMDBDataset(root=args.data, name='celeba64', train=True, transform=train_transform, is_encoded=True)
             valid_data = LMDBDataset(root=args.data, name='celeba64', train=False, transform=valid_transform, is_encoded=True)
         elif dataset in {'celeba_256'}:
@@ -299,6 +300,26 @@ def _data_transforms_celeba64(size):
 
     valid_transform = transforms.Compose([
         CropCelebA64(),
+        transforms.Resize(size),
+        transforms.ToTensor(),
+    ])
+
+    return train_transform, valid_transform
+
+def _data_transforms_celeba64_hjs(size, crop_size=140):
+    """ 
+    Hayley's celeba64 data-preprocessing that is applied consistently for training all gms in our GM dataset.
+    Note: crop_size=140 is used by yang song in score_sde_pytorch repo
+    """
+    train_transform = transforms.Compose([
+        transforms.CenterCrop(crop_size),
+        transforms.Resize(size),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+    ])
+
+    valid_transform = transforms.Compose([
+        transforms.CenterCrop(crop_size),
         transforms.Resize(size),
         transforms.ToTensor(),
     ])

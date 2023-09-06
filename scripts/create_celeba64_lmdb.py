@@ -34,13 +34,15 @@ def main(split, img_path, lmdb_path):
                 file_data = f.read()
 
             txn.put(str(i).encode(), file_data)
-            print(i)
+            if (i+1)%1000 == 0: 
+                print(i)
+    print(f"Done creating lmdb for celeba: {split}")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('CelebA 64 LMDB creator.')
     # experimental results
-    parser.add_argument('--img_path', type=str, default='/data1/datasets/celeba_org/',
+    parser.add_argument('--img_path', type=str, default='/data/datasets/celeba_org/',
                         help='location of images for CelebA dataset')
     parser.add_argument('--lmdb_path', type=str, default='/data1/datasets/celeba_org/celeba64_lmdb',
                         help='target location for storing lmdb files')

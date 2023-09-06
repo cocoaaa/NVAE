@@ -20,6 +20,7 @@ import utils
 import datasets
 from train import test, init_processes, test_vae_fid
 
+from IPython.core.debugger import set_trace as breakpoint
 
 def set_bn(model, bn_eval_mode, num_samples=1, t=1.0, iter=100):
     if bn_eval_mode:
@@ -97,10 +98,11 @@ def main(eval_args):
         args.num_process_per_node, args.num_proc_node = eval_args.world_size, 1   # evaluate only one 1 node
         fid = test_vae_fid(model, args, total_fid_samples=50000)
         logging.info('fid is %f' % fid)
-    else:
+    else: #eval_mode == "sample"
         bn_eval_mode = not eval_args.readjust_bn
-        total_samples = 50000 // eval_args.world_size          # num images per gpu
-        num_samples = 100                                      # sampling batch size
+        total_samples = eval_args.num_samples // eval_args.world_size          # num images per gpu
+        print('Num. total samples: ', total_samples)
+        num_samples = 16 #100                                      # sampling batch size
         num_iter = int(np.ceil(total_samples / num_samples))   # num iterations per gpu
 
         with torch.no_grad():
@@ -127,10 +129,12 @@ def main(eval_args):
                     plt.imshow(output_tiled)
                     plt.show()
                 else:
-                    file_path = os.path.join(eval_args.save, 'gpu_%d_samples_%d.npz' % (eval_args.local_rank, ind))
+                    print('output img shape: ', output_img.shape)
+                    # breakpoint()
+                    file_path = os.path.join(eval_args.save, 'gpu_%d_samples_%d_%s.npz' % (eval_args.local_rank, ind, utils.now2str()))
                     np.savez_compressed(file_path, samples=output_img.cpu().numpy())
                     logging.info('Saved at: {}'.format(file_path))
-
+                    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('encoder decoder examiner')
@@ -138,7 +142,7 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint', type=str, default='/tmp/expr/checkpoint.pt',
                         help='location of the checkpoint')
     parser.add_argument('--save', type=str, default='/tmp/expr',
-                        help='location of the checkpoint')
+                        help='location to save sampled image batch as npz file')
     parser.add_argument('--eval_mode', type=str, default='sample', choices=['sample', 'evaluate', 'evaluate_fid'],
                         help='evaluation mode. you can choose between sample or evaluate.')
     parser.add_argument('--eval_on_train', action='store_true', default=False,
@@ -151,6 +155,8 @@ if __name__ == '__main__':
                         help='The temperature used for sampling.')
     parser.add_argument('--num_iw_samples', type=int, default=1000,
                         help='The number of IW samples used in test_ll mode.')
+    parser.add_argument('--num_samples', type=int, default=50_000,
+                    help='The number of samples to sample from a checkpoint.')
     parser.add_argument('--fid_dir', type=str, default='/tmp/fid-stats',
                         help='path to directory where fid related files are stored')
     parser.add_argument('--batch_size', type=int, default=0,
